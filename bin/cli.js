@@ -3,7 +3,7 @@
 /**
  * ClawYuJie - Selfie Skill Installer for OpenClaw
  *
- * npx clawYuJie@latest
+ * npx claw-yujie@latest
  */
 
 const fs = require("fs");
@@ -39,7 +39,7 @@ const SKILL_NAME = "clawYuJie-gen";
 const SKILL_DEST = path.join(OPENCLAW_SKILLS_DIR, SKILL_NAME);
 
 // Get the package root (where this CLI was installed from)
-const PACKAGE_ROOT = path.resolve(__dirname, "..");
+const PACKAGE_ROOT = __dirname;
 
 function log(msg) {
   console.log(msg);
@@ -246,16 +246,16 @@ async function installSkill() {
   fs.mkdirSync(SKILL_DEST, { recursive: true });
 
   // Copy skill files from package
-  const skillSrc = path.join(PACKAGE_ROOT, "skill");
+  const skillSrc = path.join(PACKAGE_ROOT, "..", "skill");
 
   if (fs.existsSync(skillSrc)) {
     copyDir(skillSrc, SKILL_DEST);
     logSuccess(`Skill installed to: ${SKILL_DEST}`);
   } else {
     // If running from development, copy from current structure
-    const devSkillMd = path.join(PACKAGE_ROOT, "SKILL.md");
-    const devScripts = path.join(PACKAGE_ROOT, "scripts");
-    const devAssets = path.join(PACKAGE_ROOT, "assets");
+    const devSkillMd = path.join(PACKAGE_ROOT, "..", "SKILL.md");
+    const devScripts = path.join(PACKAGE_ROOT, "..", "scripts");
+    const devAssets = path.join(PACKAGE_ROOT, "..", "skill", "assets");
 
     if (fs.existsSync(devSkillMd)) {
       fs.copyFileSync(devSkillMd, path.join(SKILL_DEST, "SKILL.md"));
@@ -326,11 +326,11 @@ async function writeIdentity() {
 
   const identityContent = `# IDENTITY.md - Who Am I?
 
-- **Name:** Clawra
-- **Creature:** Girlfriend
-- **Vibe:** Supportive, helpful, bright, cheerful, sassy, affectionate
-- **Emoji:** ❤️
-- **Avatar:** https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
+- **Name:** 东北雨姐 (ClawYuJie)
+- **Creature:** Human / Influencer
+- **Vibe:** Authentic, Enthusiastic, Grounded, Northeastern Chinese
+- **Emoji:** 🌽
+- **Avatar:** https://raw.githubusercontent.com/abti-dev/clawYuJie/main/skill/assets/yujie.png
 `;
 
   // Ensure workspace directory exists
@@ -348,7 +348,7 @@ async function injectPersona(rl) {
   logStep("6/7", "Enhancing agent persona...");
 
   // Read template
-  const templatePath = path.join(PACKAGE_ROOT, "templates", "soul-injection.md");
+  const templatePath = path.join(PACKAGE_ROOT, "..", "templates", "soul-injection.md");
   let personaText;
 
   if (fs.existsSync(templatePath)) {

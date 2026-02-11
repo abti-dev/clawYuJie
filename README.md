@@ -4,8 +4,23 @@
 
 ## 快速开始
 
+### 本地运行 (推荐)
+
+由于该包尚未发布到 npm 仓库，请下载源码后在本地运行安装：
+
 ```bash
-npx clawYuJie@latest
+# 1. 克隆或下载源码
+git clone https://github.com/abti-dev/clawYuJie.git
+cd clawYuJie
+
+# 2. 运行安装脚本
+node bin/cli.js
+```
+
+### 如果已发布到 npm (将来)
+
+```bash
+npx claw-yujie@latest
 ```
 
 这将自动完成以下步骤：
