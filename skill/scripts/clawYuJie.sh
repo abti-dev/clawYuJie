@@ -71,18 +71,32 @@ log_info "Reference Image: $REF_IMAGE"
 if [[ "$REF_IMAGE" =~ ^https?:// ]]; then
   # It's a URL
   IMAGE_PAYLOAD="\"image\": \"$REF_IMAGE\""
-elif [ -f "$REF_IMAGE" ]; then
-  # It's a local file, convert to Base64
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    BASE64_DATA=$(base64 < "$REF_IMAGE")
-  else
-    BASE64_DATA=$(base64 -w 0 < "$REF_IMAGE")
-  fi
-  IMAGE_PAYLOAD="\"binary_data_base64\": [\"$BASE64_DATA\"]"
-  log_info "Converted local image to Base64 (length: ${#BASE64_DATA})"
 else
-  log_error "Reference image not found or invalid: $REF_IMAGE"
-  exit 1
+  # Check if file exists as is
+  if [ ! -f "$REF_IMAGE" ]; then
+    # Try resolving relative to script directory if it looks like a project path
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    # If script is in scripts/ and image is in assets/, try ../assets/
+    ALT_PATH="$SCRIPT_DIR/../assets/$(basename "$REF_IMAGE")"
+    if [ -f "$ALT_PATH" ]; then
+        log_info "Resolved image path to: $ALT_PATH"
+        REF_IMAGE="$ALT_PATH"
+    fi
+  fi
+
+  if [ -f "$REF_IMAGE" ]; then
+    # It's a local file, convert to Base64
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      BASE64_DATA=$(base64 < "$REF_IMAGE")
+    else
+      BASE64_DATA=$(base64 -w 0 < "$REF_IMAGE")
+    fi
+    IMAGE_PAYLOAD="\"binary_data_base64\": [\"$BASE64_DATA\"]"
+    log_info "Converted local image to Base64 (length: ${#BASE64_DATA})"
+  else
+    log_error "Reference image not found or invalid: $REF_IMAGE"
+    exit 1
+  fi
 fi
 
 # Generate image via Volcengine
@@ -126,7 +140,7 @@ log_info "Sending to channel: $CHANNEL"
 
 # Send via OpenClaw
 if [ "$USE_CLI" = true ]; then
-    openclaw message send --action send --channel "$CHANNEL" --message "$CAPTION" --media "$IMAGE_URL"
+    openclaw message send --action send --target "$CHANNEL" --message "$CAPTION" --media "$IMAGE_URL"
 else
     # Fallback to direct API call if needed
     log_warn "Direct API call not fully implemented in this script version, please install openclaw CLI"
