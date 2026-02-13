@@ -1,12 +1,12 @@
 ---
 name: clawYuJie-gen
-description: 使用豆包 Seedream (Volcengine) 生成图片并通过 OpenClaw 发送到消息渠道
+description: 使用豆包 Seedream (Volcengine) 生成图片，返回图片 URL 供 Agent 发送
 allowed-tools: Bash(npm:*) Bash(npx:*) Bash(openclaw:*) Bash(curl:*) Read Write WebFetch
 ---
 
 # ClawYuJie 图像生成
 
-使用火山引擎的豆包 Seedream 模型生成图片，并通过 OpenClaw 将其分发到各个消息平台。
+使用火山引擎的豆包 Seedream 模型生成图片。脚本会返回图片的 URL，你需要手动将其包含在回复中。
 
 ## 何时使用
 
@@ -29,28 +29,38 @@ ARK_API_KEY=your_volcengine_api_key
 **对于自拍/人像：**
 构造一个详细的提示词来描述外貌和场景。
 由于这是文生图模型，你必须在提示词中包含对人物的描述。
-*示例：* "一张真实自然的生活照，中年东北女性，面容朴实亲切，皮肤健康，利落短发，穿着家常棉服/围裙/碎花衬衫，在东北农家院里/灶台前/田地间，面带爽朗笑容，看着镜头，充满烟火气，自然光，写实风格，高清画质，2k。"
+*示例：* "一张真实自然的生活照，中年东北女性，面容朴实亲切，皮肤健康，利落短发，穿着家常碎花衬衫，在东北农家院里，面带爽朗笑容，看着镜头，充满烟火气，自然光，写实风格，高清画质，2k。"
 
 **对于通用场景：**
 使用用户的描述，并添加艺术风格关键词以增强效果。
 *示例：* "东北农家院，农村灶台，大锅炖菜，田园田地，柴火炊烟，朴实烟火气，暖色调，写实生活风，自然光，细节丰富，质感真实，画面温暖，接地气，生活化场景，高清画质。"
 
-### 第二步：生成并发送
+### 第二步：生成图片
 
-使用 `clawYuJie.sh` 脚本生成并发送图片。
-该脚本支持图生图 (Image-to-Image)，默认使用一个固定参考图（可用于保持人物一致性），也可以在第四个参数指定新的参考图 URL。
+使用 `clawYuJie.sh` 脚本生成图片。
+脚本会输出 JSON 格式的结果，包含 `image_url`。
 
 ```bash
-# 语法
-./scripts/clawYuJie.sh "<PROMPT>" "<CHANNEL>" "<CAPTION>" ["<REFERENCE_IMAGE_URL>"]
+# 语法 (注意：不再需要 channel 和 caption 参数，但为了兼容性可以保留占位符)
+./scripts/clawYuJie.sh "<PROMPT>" "unused" "unused" ["<REFERENCE_IMAGE_URL>"]
 ```
 
-**示例 1 (使用默认参考图):**
-```bash
-./scripts/clawYuJie.sh "生成狗狗趴在草地上的近景画面" "#general" "看这只可爱的狗狗！"
-```
+### 第三步：发送图片
 
-**示例 2 (指定参考图):**
+解析脚本输出的 JSON，获取 `image_url`。
+然后，在你的回复中使用 Markdown 图片语法显示图片，并配上符合人设的文字。
+
+**示例回复：**
+
+> 来啦老铁！看看俺这张照片，是不是贼带劲？😁
+> 
+> ![生成的图片](https://image-url-from-script...)
+
+**代码示例:**
 ```bash
-./scripts/clawYuJie.sh "变成动漫风格" "#general" "动漫版！" "https://example.com/my-photo.jpg"
+# 生成
+RESULT=$(./scripts/clawYuJie.sh "生成提示词..." "unused" "unused")
+# 获取 URL (如果你的环境支持 jq)
+URL=$(echo $RESULT | jq -r .image_url)
+# 或者直接让 LLM 从输出中读取 URL
 ```

@@ -17,15 +17,15 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 log_info() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${GREEN}[INFO]${NC} $1" >&2
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1" >&2
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
 # Check required environment variables
@@ -138,12 +138,5 @@ fi
 log_info "Image generated: $IMAGE_URL"
 log_info "Sending to channel: $CHANNEL"
 
-# Send via OpenClaw
-if [ "$USE_CLI" = true ]; then
-    openclaw message send --action send --target "$CHANNEL" --message "$CAPTION" --media "$IMAGE_URL"
-else
-    # Fallback to direct API call if needed
-    log_warn "Direct API call not fully implemented in this script version, please install openclaw CLI"
-fi
-
-log_info "Done!"
+# Output JSON result
+echo "{\"status\": \"success\", \"image_url\": \"$IMAGE_URL\"}"
